@@ -2,10 +2,12 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <vector>
-#include "statisticswindow.h"
 #include <QTimer>
 #include <QTime>
+#include <QtConcurrent>
+#include <QFutureWatcher>
+#include "encoder.h"
+#include "statisticswindow.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -16,26 +18,28 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
 private slots:
     void on_selectFileButton_clicked();
     void on_encodeButton_clicked();
     void on_cancelButton_clicked();
+    void handleEncodingFinished(const std::vector<int>& encodedData);
     void updateExecutionTime();
-   // void showStatisticsWindow(const std::vector<int>& data, const QString& label);
-
+    void updateProgressBar(int value);
 
 private:
     Ui::MainWindow *ui;
+    Encoder *encoder;
     QString inputFilePath;
-    std::vector<int> encode(const std::vector<int> &data);
-    QTimer *executionTimer;
-    QTime executionTime;
-    void writeEncodedDataToFile(const std::vector<int>& encodedData, const QString& filePath);
-    //void printStatistics(const std::vector<int>& data, const QString& label);
-    void updateProgressBar(int value);
+    std::vector<int> inputData;
     StatisticsWindow *statisticsWindow;
+    QTimer *timer;
+    QTime startTime;
+    QFutureWatcher<void> watcher;
+
+    void loadDataFromFile();
 };
+
 #endif // MAINWINDOW_H

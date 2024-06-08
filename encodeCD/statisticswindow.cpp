@@ -13,23 +13,40 @@ StatisticsWindow::~StatisticsWindow()
     delete ui;
 }
 
-
 void StatisticsWindow::displayStatistics(const std::vector<int>& inputData, const QString& inputLabel,
                                          const std::vector<int>& outputData, const QString& outputLabel)
 {
-    int count1 = 0, count0 = 0;
-    for (int num : inputData) {
-        if (num == 1) count1++;
-        else count0++;
-    }
-    QString inputStats = inputLabel + ": " + QString::number(inputData.size()) + " шт [1=" + QString::number(count1 * 100 / inputData.size()) + "%; 0=" + QString::number(count0 * 100 / inputData.size()) + "%]\n";
+    auto calculateStatistics = [](const std::vector<int>& data, const QString& label) -> QString {
+        int count1 = 0;
+        int total = static_cast<int>(data.size());
+
+        for (int num : data) {
+            if (num == 1) count1++;
+        }
+
+        int count0 = total - count1;
+        double percent1 = static_cast<double>(count1) * 100.0 / total;
+        double percent0 = static_cast<double>(count0) * 100.0 / total;
+
+        // Округление с компенсацией ошибки
+        int intPercent1 = static_cast<int>(percent1);
+        int intPercent0 = static_cast<int>(percent0);
+
+        int roundingError = 100 - (intPercent1 + intPercent0);
+        if (roundingError != 0) {
+            if (roundingError > 0) {
+                intPercent1 += roundingError;
+            } else {
+                intPercent1 -= roundingError;
+            }
+        }
+
+        return label + ": " + QString::number(total) + " шт [1=" + QString::number(intPercent1) + "%; 0=" + QString::number(intPercent0) + "%]\n";
+    };
+
+    QString inputStats = calculateStatistics(inputData, inputLabel);
     ui->inputStatisticsTextEdit->setPlainText(inputStats);
 
-    count1 = 0; count0 = 0;
-    for (int num : outputData) {
-        if (num == 1) count1++;
-        else count0++;
-    }
-    QString outputStats = outputLabel + ": " + QString::number(outputData.size()) + " шт [1=" + QString::number(count1 * 100 / outputData.size()) + "%; 0=" + QString::number(count0 * 100 / outputData.size()) + "%]\n";
+    QString outputStats = calculateStatistics(outputData, outputLabel);
     ui->outputStatisticsTextEdit->setPlainText(outputStats);
 }
