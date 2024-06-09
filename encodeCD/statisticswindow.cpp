@@ -1,6 +1,5 @@
 #include "statisticswindow.h"
 
-
 StatisticsWindow::StatisticsWindow(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::StatisticsWindow)
@@ -44,9 +43,19 @@ void StatisticsWindow::displayStatistics(const std::vector<int>& inputData, cons
         return label + ": " + QString::number(total) + " шт [1=" + QString::number(intPercent1) + "%; 0=" + QString::number(intPercent0) + "%]\n";
     };
 
+    auto calculateEncodedStatistics = [](const std::vector<int>& data, const QString& label) -> QString {
+        int total = 0;
+        for (size_t i = 1; i < data.size(); i += 2) {
+            total += data[i];
+        }
+
+        QString result = label + ": " + QString::number(total) + " шт (закодировано в " + QString::number(data.size()) + " элементов)\n";
+        return result;
+    };
+
     QString inputStats = calculateStatistics(inputData, inputLabel);
     ui->inputStatisticsTextEdit->setPlainText(inputStats);
 
-    QString outputStats = calculateStatistics(outputData, outputLabel);
+    QString outputStats = calculateEncodedStatistics(outputData, outputLabel);
     ui->outputStatisticsTextEdit->setPlainText(outputStats);
 }

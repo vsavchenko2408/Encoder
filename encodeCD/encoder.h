@@ -22,12 +22,14 @@ signals:
 
 public slots:
     void encode();
+    void decode(); // Новый метод для декодирования
 
 private:
     std::vector<int> inputData;
     QString outputFilePath;
 
     std::vector<int> encodeData(const std::vector<int>& data);
+    std::vector<int> decodeData(const std::vector<int>& encodedData); // Новый метод для декодирования
     void writeEncodedDataToFile(const std::vector<int>& encodedData, const QString& filePath);
 };
 

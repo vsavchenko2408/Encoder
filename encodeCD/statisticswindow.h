@@ -6,7 +6,6 @@
 #include <QString>
 #include "ui_statisticswindow.h"
 
-
 namespace Ui {
 class StatisticsWindow;
 }

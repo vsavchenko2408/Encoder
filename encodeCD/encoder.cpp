@@ -1,5 +1,6 @@
 #include "encoder.h"
 #include <fstream>
+#include <iostream>
 
 Encoder::Encoder(QObject *parent)
     : QObject(parent)
@@ -15,7 +16,7 @@ void Encoder::setOutputFile(const QString &filePath)
     outputFilePath = filePath;
 }
 
-std::vector<int> Encoder::getInputData() const  // Реализация нового метода
+std::vector<int> Encoder::getInputData() const
 {
     return inputData;
 }
@@ -27,6 +28,11 @@ void Encoder::encode()
     emit encodingFinished(encodedData);
 }
 
+void Encoder::decode()
+{
+    // Пример вызова декодирования (нужно обеспечить чтение данных из файла и их декодирование)
+}
+
 std::vector<int> Encoder::encodeData(const std::vector<int>& data)
 {
     std::vector<int> encodedData;
@@ -36,16 +42,20 @@ std::vector<int> Encoder::encodeData(const std::vector<int>& data)
     int currentStep = 0;
 
     int count = 1;
+    int currentValue = data[0];
     for (size_t i = 1; i < data.size(); ++i) {
-        if (data[i] == data[i - 1]) {
+        if (data[i] == currentValue) {
             ++count;
         } else {
+            encodedData.push_back(currentValue);
             encodedData.push_back(count);
+            currentValue = data[i];
             count = 1;
         }
         currentStep++;
         emit progressUpdated(static_cast<int>((static_cast<double>(currentStep) / totalSteps) * 100));
     }
+    encodedData.push_back(currentValue);
     encodedData.push_back(count);
     currentStep++;
     emit progressUpdated(static_cast<int>((static_cast<double>(currentStep) / totalSteps) * 100));
@@ -53,10 +63,26 @@ std::vector<int> Encoder::encodeData(const std::vector<int>& data)
     return encodedData;
 }
 
+std::vector<int> Encoder::decodeData(const std::vector<int>& encodedData)
+{
+    std::vector<int> decodedData;
+    if (encodedData.empty()) return decodedData;
+
+    for (size_t i = 0; i < encodedData.size(); i += 2) {
+        int value = encodedData[i];
+        int count = encodedData[i + 1];
+        for (int j = 0; j < count; ++j) {
+            decodedData.push_back(value);
+        }
+    }
+
+    return decodedData;
+}
+
 void Encoder::writeEncodedDataToFile(const std::vector<int>& encodedData, const QString& filePath)
 {
     std::ofstream outputFile(filePath.toStdString(), std::ios::binary);
-    for (int count : encodedData) {
-        outputFile.write(reinterpret_cast<const char*>(&count), sizeof(count));
+    for (int value : encodedData) {
+        outputFile.write(reinterpret_cast<const char*>(&value), sizeof(value));
     }
 }
