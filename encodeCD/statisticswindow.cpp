@@ -45,12 +45,32 @@ void StatisticsWindow::displayStatistics(const std::vector<int>& inputData, cons
 
     auto calculateEncodedStatistics = [](const std::vector<int>& data, const QString& label) -> QString {
         int total = 0;
-        for (size_t i = 1; i < data.size(); i += 2) {
-            total += data[i];
+        int count1 = 0;
+        for (size_t i = 0; i < data.size(); i += 2) {
+            int value = data[i];
+            int count = data[i + 1];
+            total += count;
+            if (value == 1) count1 += count;
         }
 
-        QString result = label + ": " + QString::number(total) + " шт (закодировано в " + QString::number(data.size()) + " элементов)\n";
-        return result;
+        int count0 = total - count1;
+        double percent1 = static_cast<double>(count1) * 100.0 / total;
+        double percent0 = static_cast<double>(count0) * 100.0 / total;
+
+        // Округление с компенсацией ошибки
+        int intPercent1 = static_cast<int>(percent1);
+        int intPercent0 = static_cast<int>(percent0);
+
+        int roundingError = 100 - (intPercent1 + intPercent0);
+        if (roundingError != 0) {
+            if (roundingError > 0) {
+                intPercent1 += roundingError;
+            } else {
+                intPercent1 -= roundingError;
+            }
+        }
+
+        return label + ": " + QString::number(total) + " шт [1=" + QString::number(intPercent1) + "%; 0=" + QString::number(intPercent0) + "%]\n";
     };
 
     QString inputStats = calculateStatistics(inputData, inputLabel);
